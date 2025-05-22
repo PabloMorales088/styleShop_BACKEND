@@ -1,6 +1,7 @@
-package com.styleshop.config;
+package com.styleshop.filter;
 import java.io.IOException;
 
+import com.styleshop.config.JwtUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;

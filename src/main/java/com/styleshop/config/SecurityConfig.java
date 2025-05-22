@@ -1,5 +1,7 @@
 package com.styleshop.config;
 
+import com.styleshop.filter.JwtFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,30 +15,23 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
 
-    public SecurityConfig(JwtFilter jwtFilter) {
-        this.jwtFilter = jwtFilter;
-    }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()
+        http
+                .csrf().disable()
                 .cors().and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeHttpRequests()
-
-                // ✅ Permitir login y registro
                 .requestMatchers(HttpMethod.POST, "/auth/**", "/api/usuarios/**").permitAll()
-
-                // ✅ Permitir GET públicos para productos, categorías e imágenes
                 .requestMatchers(HttpMethod.GET, "/api/categorias/**", "/api/productos/**", "/imagenes/**").permitAll()
-
-                // ✅ Cualquier otra ruta requiere autenticación
-                .anyRequest().authenticated()
-
+                .requestMatchers("/api/carrito/**").permitAll()
+                .requestMatchers("/api/pedidos/**").authenticated()
+                .anyRequest().permitAll()
                 .and()
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -49,7 +44,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuracion) throws Exception {
-        return configuracion.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
     }
 }

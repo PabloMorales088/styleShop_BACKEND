@@ -25,11 +25,4 @@ public class Usuario {
     private boolean locked;
 
     private boolean disabled;
-
-    @Column( name = "role_id" )
-    private Long roleId;
-
-    @ManyToOne //nombre en BD de la FK
-    @JoinColumn( name = "role_id", insertable = false, updatable = false )
-    private Role roleUser;
 }

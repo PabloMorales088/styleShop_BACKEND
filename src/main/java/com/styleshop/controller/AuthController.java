@@ -1,89 +1,37 @@
 package com.styleshop.controller;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import com.styleshop.config.JwtUtils;
-import com.styleshop.config.SecurityConfig;
-import com.styleshop.dto.LoginDto;
 import com.styleshop.model.Usuario;
 import com.styleshop.service.UsuarioService;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin("*")
+@RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-
+    private final UsuarioService usuarioService;
     private final JwtUtils jwtUtils;
 
-    private final UsuarioService userService;
-
-
-    public AuthController(AuthenticationManager authenticationManager, JwtUtils jwtUtils, UsuarioService userService, SecurityConfig securityConfig) {
-        this.authenticationManager = authenticationManager;
-        this.jwtUtils = jwtUtils;
-        this.userService = userService;
+    @PostMapping("/registro")
+    public ResponseEntity<?> registrar(@RequestBody Usuario usuario) {
+        Usuario nuevo = usuarioService.save(usuario);
+        return ResponseEntity.ok("Usuario registrado correctamente con ID: " + nuevo.getId());
     }
-
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody LoginDto loginDto){
-        System.out.println(loginDto.getEmail());
-        System.out.println(loginDto.getPassword());
-        UsernamePasswordAuthenticationToken login = new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword());
-        Authentication authentication = this.authenticationManager.authenticate(login);
+    public ResponseEntity<?> login(@RequestBody Usuario usuario) {
+        Usuario user = usuarioService.validarCredenciales(usuario.getEmail(), usuario.getPassword());
+        String token = jwtUtils.create(user.getEmail());
 
-        if (authentication.isAuthenticated()) {
-            // Obtiene el usuario autenticado
-            Optional<Usuario> optionalUser = userService.getByEmail(loginDto.getEmail());
-            if (!optionalUser.isPresent() || optionalUser.get().isLocked() || optionalUser.get().isDisabled()) {
-                return new ResponseEntity<Void>(HttpStatus.UNAUTHORIZED);
-            }
+        Map<String, String> response = new HashMap<>();
+        response.put("token", token);
 
-            Usuario user = optionalUser.get();
-
-            String jwt = this.jwtUtils.create(loginDto.getEmail());
-            // Obtén el rol del usuario autenticado
-            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-            String userRole = authorities.stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.joining(", "));
-
-            return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, jwt).build();
-        } else {
-            return new ResponseEntity<Void>(HttpStatus.UNAUTHORIZED);
-        }
+        return ResponseEntity.ok(response);
     }
-
-
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Usuario userEntity) {
-        Usuario registeredUser = userService.save(userEntity);
-
-        if (registeredUser == null) {
-            return ResponseEntity
-                    .badRequest()
-                    .body("El nombre de usuario o email ya existe");
-        }
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body("Usuario registrado correctamente");
-    }
-
 }

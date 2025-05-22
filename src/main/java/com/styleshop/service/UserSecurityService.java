@@ -25,12 +25,10 @@ public class UserSecurityService implements UserDetailsService{
         Usuario user = this.usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("No se encontró el usuario con email: " + email));
 
-        String role = user.getRoleUser().getRole(); // Suponiendo que está cargado correctamente
 
         return User.builder()
                 .username(user.getEmail())  // Aquí usamos el email como nombre de usuario
                 .password(user.getPassword())
-                .roles(role) // Esto ya es un array internamente
                 .disabled(user.isDisabled())
                 .accountLocked(user.isLocked())
                 .build();

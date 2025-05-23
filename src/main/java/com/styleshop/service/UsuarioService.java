@@ -14,6 +14,10 @@ public class UsuarioService {
     private final PasswordEncoder passwordEncoder;
 
     public Usuario save(Usuario userEntity) {
+        if (userEntity.getPassword() == null || userEntity.getPassword().isEmpty()) {
+            throw new IllegalArgumentException("La contraseña no puede estar vacía");
+        }
+
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
         userEntity.setLocked(false);
         userEntity.setDisabled(false);

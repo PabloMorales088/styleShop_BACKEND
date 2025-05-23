@@ -4,6 +4,7 @@ import com.styleshop.config.JwtUtils;
 import com.styleshop.model.Usuario;
 import com.styleshop.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,10 +20,14 @@ public class AuthController {
     private final JwtUtils jwtUtils;
 
     @PostMapping("/registro")
-    public ResponseEntity<?> registrar(@RequestBody Usuario usuario) {
+    public ResponseEntity<Map<String, String>> registrar(@RequestBody Usuario usuario) {
         Usuario nuevo = usuarioService.save(usuario);
-        return ResponseEntity.ok("Usuario registrado correctamente con ID: " + nuevo.getId());
+        Map<String, String> response = new HashMap<>();
+        response.put("mensaje", "Usuario registrado correctamente con ID: " + nuevo.getId());
+        return ResponseEntity.ok(response);
     }
+
+
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Usuario usuario) {

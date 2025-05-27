@@ -27,10 +27,18 @@ public class SecurityConfig {
                 .cors().and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeHttpRequests()
-                .requestMatchers(HttpMethod.POST, "/auth/**", "/api/usuarios/**").permitAll()
+                // AUTENTICACIÓN ABIERTA
+                .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/usuarios/**").permitAll()
+
+                // GETs públicos
                 .requestMatchers(HttpMethod.GET, "/api/categorias/**", "/api/productos/**", "/imagenes/**").permitAll()
-                .requestMatchers("/api/carrito/**").permitAll()
+
+                // RUTAS PROTEGIDAS
                 .requestMatchers("/api/pedidos/**").authenticated()
+                .requestMatchers("/api/carrito/**").authenticated()
+
+                // Cualquier otro endpoint
                 .anyRequest().permitAll()
                 .and()
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

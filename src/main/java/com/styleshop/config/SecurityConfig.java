@@ -18,41 +18,45 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    // Filtro JWT personalizado que se ejecuta antes del filtro estándar de autenticación
     private final JwtFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()
-                .cors().and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+                .csrf().disable() // Desactiva la protección CSRF, útil para APIs REST
+                .cors().and() // Habilita CORS
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and() // No se usará sesión (stateless)
                 .authorizeHttpRequests()
-                // AUTENTICACIÓN ABIERTA
+
+                // Rutas abiertas para autenticación y registro
                 .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/usuarios/**").permitAll()
 
-                // GETs públicos
+                // Rutas GET públicas para consultar productos, categorías e imágenes
                 .requestMatchers(HttpMethod.GET, "/api/categorias/**", "/api/productos/**", "/imagenes/**").permitAll()
 
-                // RUTAS PROTEGIDAS
+                // Rutas protegidas: requieren autenticación con JWT
                 .requestMatchers("/api/pedidos/**").authenticated()
                 .requestMatchers("/api/carrito/**").authenticated()
 
-                // Cualquier otro endpoint
+                // Cualquier otra petición es permitida (útil para pruebas, pero podría limitarse en producción)
                 .anyRequest().permitAll()
                 .and()
+
+                // Inserta el filtro JWT antes del filtro de autenticación por usuario/contraseña
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
+        return http.build(); // Construye la cadena de filtros de seguridad
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(); // Codificador de contraseñas usando BCrypt
     }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
+        return configuration.getAuthenticationManager(); // Devuelve el AuthenticationManager configurado automáticamente por Spring
     }
 }

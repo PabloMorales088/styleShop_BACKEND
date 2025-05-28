@@ -13,53 +13,53 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor // Genera constructor con los campos finales (inyección automática)
 public class ProductoService {
 
     private final ProductoRepository productoRepository;
     private final CategoriaRepository categoriaRepository;
 
-    // Crear producto
+    // Crear un nuevo producto a partir de un DTO
     public ProductoDTO crearProducto(ProductoDTO dto) {
-        Categoria categoria = categoriaRepository.findById(dto.getCategoriaId()).orElse(null);
-        Producto producto = ProductoMapper.toEntity(dto, categoria);
-        return ProductoMapper.toDTO(productoRepository.save(producto));
+        Categoria categoria = categoriaRepository.findById(dto.getCategoriaId()).orElse(null); // Busca la categoría
+        Producto producto = ProductoMapper.toEntity(dto, categoria); // Convierte el DTO en entidad
+        return ProductoMapper.toDTO(productoRepository.save(producto)); // Guarda y devuelve el DTO
     }
 
-    // Listar todos los productos
+    // Obtener todos los productos existentes
     public List<ProductoDTO> listarProductos() {
         return productoRepository.findAll().stream()
-                .map(ProductoMapper::toDTO)
+                .map(ProductoMapper::toDTO) // Mapea cada entidad a su DTO
                 .collect(Collectors.toList());
     }
 
-    // Listar productos por categoría
+    // Obtener productos filtrados por ID de categoría
     public List<ProductoDTO> listarPorCategoria(Long categoriaId) {
         return productoRepository.findByCategoriaId(categoriaId).stream()
                 .map(ProductoMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
-    // Obtener producto por ID
+    // Buscar un producto por su ID
     public ProductoDTO obtenerProducto(Long id) {
         return productoRepository.findById(id)
-                .map(ProductoMapper::toDTO)
-                .orElse(null);
+                .map(ProductoMapper::toDTO) // Convierte a DTO si se encuentra
+                .orElse(null); // Retorna null si no existe
     }
 
-    // Actualizar producto
+    // Actualizar los datos de un producto existente
     public ProductoDTO actualizarProducto(Long id, ProductoDTO dto) {
-        Producto producto = productoRepository.findById(id).orElse(null);
-        if (producto == null) return null;
+        Producto producto = productoRepository.findById(id).orElse(null); // Busca el producto actual
+        if (producto == null) return null; // Si no existe, retorna null
 
-        Categoria categoria = categoriaRepository.findById(dto.getCategoriaId()).orElse(null);
-        ProductoMapper.updateEntityFromDTO(dto, producto, categoria);
+        Categoria categoria = categoriaRepository.findById(dto.getCategoriaId()).orElse(null); // Nueva categoría
+        ProductoMapper.updateEntityFromDTO(dto, producto, categoria); // Aplica cambios al objeto existente
 
-        return ProductoMapper.toDTO(productoRepository.save(producto));
+        return ProductoMapper.toDTO(productoRepository.save(producto)); // Guarda y retorna el DTO actualizado
     }
 
-    // Eliminar producto
+    // Eliminar un producto por su ID
     public void eliminarProducto(Long id) {
-        productoRepository.deleteById(id);
+        productoRepository.deleteById(id); // Borra de la base de datos
     }
 }

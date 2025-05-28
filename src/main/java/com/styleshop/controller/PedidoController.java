@@ -16,8 +16,8 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/pedidos")
-@RequiredArgsConstructor
+@RequestMapping("/api/pedidos") // Ruta base para operaciones sobre pedidos
+@RequiredArgsConstructor // Inyección automática de dependencias vía constructor
 public class PedidoController {
 
     private final PedidoService pedidoService;
@@ -25,34 +25,47 @@ public class PedidoController {
     private final AuthenticatedUserProvider authenticatedUserProvider;
 
     /**
-     * Confirma un nuevo pedido para el usuario autenticado.
+     * POST /api/pedidos/confirmar
+     * Crea un nuevo pedido para el usuario autenticado,
+     * validando stock y vaciando el carrito después de confirmar.
      */
     @PostMapping(value = "/confirmar", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> confirmarPedido() {
         try {
+            // Obtiene al usuario autenticado desde el contexto de seguridad
             Usuario usuario = authenticatedUserProvider.getAuthenticatedUser();
+
+            // Ejecuta el proceso de confirmación de pedido
             pedidoService.confirmarPedido(usuario.getId());
+
             return ResponseEntity.ok("Pedido realizado con éxito");
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(); // Para diagnóstico en consola (debería sustituirse por logging)
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno al confirmar pedido");
         }
     }
 
     /**
-     * Devuelve los pedidos del usuario autenticado.
+     * GET /api/pedidos
+     * Devuelve la lista de pedidos ordenados por fecha (más recientes primero)
+     * pertenecientes al usuario autenticado.
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<PedidoDTO>> listarPedidosPorUsuario() {
         Usuario usuario = authenticatedUserProvider.getAuthenticatedUser();
+
+        // Recupera los pedidos ordenados por fecha descendente
         List<Pedido> pedidos = pedidoRepository.findByUsuarioIdOrderByFechaDesc(usuario.getId());
+
+        // Convierte la lista de entidades Pedido a una lista de DTOs
         List<PedidoDTO> dtos = pedidos.stream()
                 .map(PedidoMapper::toDTO)
                 .collect(Collectors.toList());
+
         return ResponseEntity.ok(dtos);
     }
 }

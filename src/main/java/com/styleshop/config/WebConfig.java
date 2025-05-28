@@ -9,7 +9,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Mapea las solicitudes que empiezan con /imagenes/ a archivos del sistema en la carpeta "uploads"
+        // Esto permite servir imágenes estáticas almacenadas fuera del classpath
         registry.addResourceHandler("/imagenes/**")
-                .addResourceLocations("file:uploads/");
+                .addResourceLocations("file:uploads/"); // La ruta debe ser absoluta o con el prefijo "file:"
     }
 }

@@ -34,10 +34,10 @@ public class AuthController {
         // Valida email y contraseña
         Usuario user = usuarioService.validarCredenciales(usuario.getEmail(), usuario.getPassword());
 
-        // Genera el token JWT usando el email como "username"
+        // Genera el token JWT usando el email como username
         String token = jwtUtils.create(user.getEmail());
 
-        // Devuelve el token en el cuerpo de la respuesta
+        // Devuelve el token
         Map<String, String> response = new HashMap<>();
         response.put("token", token);
 

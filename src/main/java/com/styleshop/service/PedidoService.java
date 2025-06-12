@@ -43,10 +43,10 @@ public class PedidoService {
         // 4. Crear el pedido vacío con estado inicial
         Pedido pedido = Pedido.builder()
                 .usuario(usuario)
-                .fecha(LocalDateTime.now()) // Fecha y hora actual
+                .fecha(LocalDateTime.now())
                 .estado(Pedido.Estado.Procesando)
-                .total(0.0) // Se calcula después
-                .detalles(new ArrayList<>()) // Lista vacía de detalles
+                .total(0.0)
+                .detalles(new ArrayList<>())
                 .build();
 
         double total = 0;
